@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Planejamento</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap">
+    <style>
+        :root {
+            --bg: oklch(15% 0.02 240);
+            --surface: oklch(20% 0.02 240);
+            --fg: oklch(95% 0.005 240);
+            --muted: oklch(60% 0.01 240);
+            --border: oklch(30% 0.02 240);
+            --accent: oklch(65% 0.18 45); /* Laranja Intenso */
+            --accent-muted: oklch(65% 0.18 45 / 0.1);
+            
+            --font-display: 'Inter', system-ui, sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-body);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        .container {
+            padding: 24px 16px 120px;
+        }
+
+        header {
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .btn-edit-toggle {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-edit-toggle.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .btn-select-all {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: none;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.03em;
+        }
+
+        .date-badge {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .week-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Bulk Selection Styles */
+        .selection-indicator {
+            width: 0;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            flex-shrink: 0;
+            pointer-events: none;
+            margin-right: 0;
+            z-index: 5;
+        }
+
+        .edit-mode .selection-indicator {
+            width: 24px;
+            opacity: 1;
+            margin-right: 12px;
+            pointer-events: auto;
+        }
+
+        .swipe-container.selected .selection-indicator {
+            background: var(--accent);
+            border-color: var(--accent);
+            opacity: 1;
+        }
+
+        .swipe-container.selected .selection-indicator::after {
+            content: "";
+            width: 10px;
+            height: 6px;
+            border-left: 2px solid var(--bg);
+            border-bottom: 2px solid var(--bg);
+            transform: rotate(-45deg) translateY(-1px);
+        }
+
+        .edit-mode .workout-card {
+            cursor: pointer;
+            transform: none !important;
+        }
+
+        .swipe-container.selected .workout-card {
+            border-color: var(--accent);
+            background: oklch(65% 0.18 45 / 0.05);
+        }
+
+        .edit-mode .btn-view, .edit-mode .swipe-action {
+            display: none !important;
+        }
+
+        /* Bulk Action Bar */
+        .bulk-action-bar {
+            position: fixed;
+            bottom: 84px;
+            left: 16px;
+            right: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transform: translateY(120%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 90;
+        }
+
+        .bulk-action-bar.active {
+            transform: translateY(0);
+        }
+
+        .selection-count {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-bulk-delete {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-bulk-download {
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-bulk-delete:disabled, .btn-bulk-download:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Swipe container */
+        .swipe-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #ff3b30;
+            display: flex;
+            align-items: center;
+            padding: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+        }
+
+        .edit-mode .swipe-container {
+            padding-left: 16px;
+            background: transparent;
+        }
+
+        .swipe-action {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .workout-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            touch-action: pan-x pan-y;
+            will-change: transform;
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .workout-card.swiped {
+            transform: translateX(-80px);
+        }
+
+        .workout-card.today {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px oklch(65% 0.18 45 / 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .day-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .day-name {
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .day-date {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .status-badge {
+            background: var(--accent-muted);
+            color: var(--accent);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .workout-main {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .workout-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .workout-focus {
+            font-size: 13px;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .workout-meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 4px;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .meta-label {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .meta-value {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .btn-view {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .today .btn-view {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-confirm {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        /* Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 34px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--muted);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .ciclo-tag {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <span class="date-badge">Sábado, 09 de Maio</span>
+                <h1>Planejamento</h1>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: flex-end;">
+                <button class="btn-select-all" id="selectAllBtn" onclick="selectAll()">Tudo</button>
+                <button class="btn-edit-toggle" id="editToggle" onclick="toggleEditMode()">Editar</button>
+            </div>
+        </header>
+
+        <div class="week-list" id="weekList">
+            <!-- Segunda -->
+            <div class="swipe-container" data-id="1" onclick="handleContainerClick(this, event)">
+                <div class="selection-indicator"></div>
+                <div class="swipe-action" onclick="showDeleteConfirm(this, event)">
+                    <span>Excluir</span>
+                </div>
+                <div class="workout-card">
+                    <div class="ciclo-tag">Ciclo 1</div>
+                    <div class="card-header">
+                        <div class="day-info">
+                            <span class="day-name">Segunda</span>
+                            <span class="day-date">04/05</span>
+                        </div>
+                    </div>
+                    <div class="workout-main">
+                        <span class="workout-title">Corrida E (35')</span>
+                        <span class="workout-focus">Aeróbio / Core & Superior</span>
+                    </div>
+                    <div class="workout-meta">
+                        <div class="meta-item"><span class="meta-label">Duração</span><span class="meta-value">~55 min</span></div>
+                        <div class="meta-item"><span class="meta-label">Terreno</span><span class="meta-value">Esteira</span></div>
+                    </div>
+                    <a href="02-treino.html?day=monday" class="btn-view" onclick="event.stopPropagation()">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Terça -->
+            <div class="swipe-container" data-id="2" onclick="handleContainerClick(this, event)">
+                <div class="selection-indicator"></div>
+                <div class="swipe-action" onclick="showDeleteConfirm(this, event)">
+                    <span>Excluir</span>
+                </div>
+                <div class="workout-card">
+                    <div class="ciclo-tag">Ciclo 1</div>
+                    <div class="card-header">
+                        <div class="day-info">
+                            <span class="day-name">Terça</span>
+                            <span class="day-date">05/05</span>
+                        </div>
+                    </div>
+                    <div class="workout-main">
+                        <span class="workout-title">Corrida E (50')</span>
+                        <span class="workout-focus">Base de Força / Full Body</span>
+                    </div>
+                    <div class="workout-meta">
+                        <div class="meta-item"><span class="meta-label">Duração</span><span class="meta-value">Sem limite</span></div>
+                        <div class="meta-item"><span class="meta-label">Terreno</span><span class="meta-value">Rua (Hills)</span></div>
+                    </div>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation()">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quinta -->
+            <div class="swipe-container" data-id="3" onclick="handleContainerClick(this, event)">
+                <div class="selection-indicator"></div>
+                <div class="swipe-action" onclick="showDeleteConfirm(this, event)">
+                    <span>Excluir</span>
+                </div>
+                <div class="workout-card">
+                    <div class="ciclo-tag">Ciclo 1</div>
+                    <div class="card-header">
+                        <div class="day-info">
+                            <span class="day-name">Quinta</span>
+                            <span class="day-date">07/05</span>
+                        </div>
+                    </div>
+                    <div class="workout-main">
+                        <span class="workout-title">Corrida E (50') + Strides</span>
+                        <span class="workout-focus">Potência & Unilateral</span>
+                    </div>
+                    <div class="workout-meta">
+                        <div class="meta-item"><span class="meta-label">Duração</span><span class="meta-value">60 min+</span></div>
+                        <div class="meta-item"><span class="meta-label">Terreno</span><span class="meta-value">Rua</span></div>
+                    </div>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation()">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sábado (Hoje) -->
+            <div class="swipe-container" data-id="4" onclick="handleContainerClick(this, event)">
+                <div class="selection-indicator"></div>
+                <div class="swipe-action" onclick="showDeleteConfirm(this, event)">
+                    <span>Excluir</span>
+                </div>
+                <div class="workout-card today">
+                    <div class="ciclo-tag">Ciclo 1</div>
+                    <div class="card-header">
+                        <div class="day-info">
+                            <span class="day-name">Sábado</span>
+                            <span class="day-date">09/05</span>
+                        </div>
+                        <span class="status-badge">Hoje</span>
+                    </div>
+                    <div class="workout-main">
+                        <span class="workout-title">Corrida E (60')</span>
+                        <span class="workout-focus">Aeróbio Resistência / Descanso Ativo</span>
+                    </div>
+                    <div class="workout-meta">
+                        <div class="meta-item"><span class="meta-label">Duração</span><span class="meta-value">60 min</span></div>
+                        <div class="meta-item"><span class="meta-label">Ritmo</span><span class="meta-value">Pace E</span></div>
+                    </div>
+                    <a href="02-treino.html" class="btn-view" onclick="event.stopPropagation()">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Domingo -->
+            <div class="swipe-container" data-id="5" onclick="handleContainerClick(this, event)">
+                <div class="selection-indicator"></div>
+                <div class="swipe-action" onclick="showDeleteConfirm(this, event)">
+                    <span>Excluir</span>
+                </div>
+                <div class="workout-card">
+                    <div class="ciclo-tag">Ciclo 1</div>
+                    <div class="card-header">
+                        <div class="day-info">
+                            <span class="day-name">Domingo</span>
+                            <span class="day-date">10/05</span>
+                        </div>
+                    </div>
+                    <div class="workout-main">
+                        <span class="workout-title">Longo L (80')</span>
+                        <span class="workout-focus">Resistência Longa / Mobilidade</span>
+                    </div>
+                    <div class="workout-meta">
+                        <div class="meta-item"><span class="meta-label">Duração</span><span class="meta-value">80 min</span></div>
+                        <div class="meta-item"><span class="meta-label">Ritmo</span><span class="meta-value">Pace L</span></div>
+                    </div>
+                    <a href="#" class="btn-view" onclick="event.stopPropagation()">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Action Bar -->
+    <div class="bulk-action-bar" id="bulkActionBar">
+        <span class="selection-count" id="selectionCount">0 selecionados</span>
+        <div class="bulk-actions">
+            <button class="btn-bulk-download" id="btnBulkDownload" disabled onclick="handleDownload()">Download</button>
+            <button class="btn-bulk-delete" id="btnBulkDelete" disabled onclick="showBulkDeleteConfirm()">Excluir</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Confirmar Exclusão</div>
+            <div class="modal-text" id="modalText">Tem certeza?</div>
+            <div class="modal-actions">
+                <button class="btn-confirm" id="confirmBtn" onclick="confirmDelete()">Deletar</button>
+                <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let elementsToDelete = [];
+        let isEditMode = false;
+        let startX = 0;
+        let isSwiping = false;
+
+        function initSwipe() {
+            const cards = document.querySelectorAll('.workout-card');
+            cards.forEach(card => {
+                card.addEventListener('touchstart', e => {
+                    if (isEditMode) return;
+                    startX = e.touches[0].clientX;
+                    isSwiping = true;
+                    cards.forEach(c => { if (c !== card) { c.classList.remove('swiped'); c.style.transform = ''; } });
+                }, { passive: true });
+
+                card.addEventListener('touchmove', e => {
+                    if (!isSwiping || isEditMode) return;
+                    const diff = startX - e.touches[0].clientX;
+                    if (diff > 0) card.style.transform = `translateX(-${Math.min(diff, 80)}px)`;
+                }, { passive: true });
+
+                card.addEventListener('touchend', e => {
+                    if (isEditMode) return;
+                    isSwiping = false;
+                    const diff = startX - e.changedTouches[0].clientX;
+                    if (diff > 40) {
+                        card.classList.add('swiped');
+                        card.style.transform = 'translateX(-80px)';
+                    } else {
+                        card.classList.remove('swiped');
+                        card.style.transform = '';
+                    }
+                });
+            });
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            document.getElementById('weekList').classList.toggle('edit-mode', isEditMode);
+            const btn = document.getElementById('editToggle');
+            btn.textContent = isEditMode ? 'Cancelar' : 'Editar';
+            btn.classList.toggle('active', isEditMode);
+            
+            document.getElementById('selectAllBtn').style.display = isEditMode ? 'block' : 'none';
+            document.getElementById('selectAllBtn').textContent = 'Tudo';
+
+            if (!isEditMode) {
+                document.querySelectorAll('.swipe-container.selected').forEach(c => c.classList.remove('selected'));
+                updateSelectionCount();
+            } else {
+                document.querySelectorAll('.workout-card.swiped').forEach(c => {
+                    c.classList.remove('swiped');
+                    c.style.transform = '';
+                });
+            }
+        }
+
+        function selectAll() {
+            const containers = document.querySelectorAll('.swipe-container');
+            const allSelected = Array.from(containers).every(c => c.classList.contains('selected'));
+            
+            containers.forEach(c => {
+                if (allSelected) {
+                    c.classList.remove('selected');
+                } else {
+                    c.classList.add('selected');
+                }
+            });
+            
+            document.getElementById('selectAllBtn').textContent = allSelected ? 'Tudo' : 'Nenhum';
+            updateSelectionCount();
+        }
+
+        function handleDownload() {
+            const count = document.querySelectorAll('.swipe-container.selected').length;
+            alert(`Preparando download de ${count} treinos...`);
+            // Simulação técnica de geração de arquivo
+        }
+
+        function handleContainerClick(container, event) {
+            if (isEditMode) {
+                container.classList.toggle('selected');
+                updateSelectionCount();
+            } else {
+                const card = container.querySelector('.workout-card');
+                if (card.classList.contains('swiped')) {
+                    card.classList.remove('swiped');
+                    card.style.transform = '';
+                }
+            }
+        }
+
+        function updateSelectionCount() {
+            const count = document.querySelectorAll('.swipe-container.selected').length;
+            document.getElementById('selectionCount').textContent = `${count} selecionado${count !== 1 ? 's' : ''}`;
+            document.getElementById('btnBulkDelete').disabled = count === 0;
+            document.getElementById('btnBulkDownload').disabled = count === 0;
+            document.getElementById('bulkActionBar').classList.toggle('active', isEditMode && count > 0);
+        }
+
+        function showDeleteConfirm(btn, event) {
+            event.stopPropagation();
+            elementsToDelete = [btn.closest('.swipe-container')];
+            document.getElementById('modalTitle').textContent = 'Confirmar Exclusão';
+            document.getElementById('modalText').textContent = 'Deletar este treino?';
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function showBulkDeleteConfirm() {
+            elementsToDelete = Array.from(document.querySelectorAll('.swipe-container.selected'));
+            document.getElementById('modalTitle').textContent = 'Excluir Selecionados';
+            document.getElementById('modalText').textContent = `Deletar ${elementsToDelete.length} treinos?`;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            elementsToDelete = [];
+        }
+
+        function confirmDelete() {
+            elementsToDelete.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'scale(0.9)';
+                setTimeout(() => el.remove(), 300);
+            });
+            setTimeout(() => {
+                if (isEditMode) toggleEditMode();
+                closeModal();
+            }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', initSwipe);
+    </script>
+
+    <nav class="bottom-nav">
+        <a href="01-planejamento.html" class="nav-item active"><span class="nav-label">Plano</span></a>
+        <a href="02-treino.html" class="nav-item"><span class="nav-label">Treino</span></a>
+        <a href="03-status.html" class="nav-item"><span class="nav-label">Stats</span></a>
+        <a href="04-upload.html" class="nav-item"><span class="nav-label">Upload</span></a>
+    </nav>
+</body>
+</html>

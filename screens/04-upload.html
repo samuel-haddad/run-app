@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Upload de Treinos</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap">
+    <style>
+        :root {
+            --bg: oklch(15% 0.02 240);
+            --surface: oklch(20% 0.02 240);
+            --fg: oklch(95% 0.005 240);
+            --muted: oklch(60% 0.01 240);
+            --border: oklch(30% 0.02 240);
+            --accent: oklch(65% 0.18 45); /* Laranja Intenso */
+            --accent-muted: oklch(65% 0.18 45 / 0.1);
+            
+            --font-display: 'Inter', system-ui, sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-body);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            padding: 24px 16px 120px;
+        }
+
+        header {
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.03em;
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        /* Upload Cards */
+        .upload-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .upload-card {
+            background: var(--surface);
+            border: 1px dashed var(--border);
+            border-radius: 16px;
+            padding: 32px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .upload-card:hover, .upload-card:active {
+            border-color: var(--accent);
+            background: var(--accent-muted);
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            border: 1px solid var(--border);
+        }
+
+        .upload-info h3 {
+            margin: 0 0 4px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .upload-info p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .file-type {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            background: var(--bg);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--muted);
+            border: 1px solid var(--border);
+        }
+
+        /* Hidden Input */
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Footer Action */
+        .footer-action {
+            margin-top: 40px;
+            padding: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .footer-action p {
+            margin: 0 0 16px;
+            font-size: 14px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Nav Tab */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 34px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: var(--muted);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Importar Treinos</h1>
+        </header>
+
+        <section>
+            <span class="section-label">UPLOAD DE ARQUIVOS</span>
+            
+            <div class="upload-stack">
+                <!-- Planilha -->
+                <label class="upload-card">
+                    <input type="file" accept=".csv">
+                    <div class="upload-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <div class="upload-info">
+                        <h3>Planilha de Treino</h3>
+                        <p>Calendário macro e ritmos sugeridos</p>
+                    </div>
+                    <span class="file-type">PLANEJAMENTO_TREINO.CSV</span>
+                </label>
+
+                <!-- Detalhes -->
+                <label class="upload-card">
+                    <input type="file" accept=".md">
+                    <div class="upload-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <div class="upload-info">
+                        <h3>Detalhes Técnicos</h3>
+                        <p>Guia de ritmos e descrição das séries</p>
+                    </div>
+                    <span class="file-type">DETALHAMENTO_TREINO.MD</span>
+                </label>
+            </div>
+        </section>
+
+        <div class="footer-action">
+            <p>Certifique-se de que os arquivos seguem o padrão técnico estabelecido.</p>
+            <button class="btn-primary">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Confirmar Importação
+            </button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="01-planejamento.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span class="nav-label">Plano</span>
+        </a>
+        <a href="02-treino.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <span class="nav-label">Treino</span>
+        </a>
+        <a href="03-status.html" class="nav-item">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"></path></svg>
+            <span class="nav-label">Stats</span>
+        </a>
+        <a href="04-upload.html" class="nav-item active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span class="nav-label">Upload</span>
+        </a>
+    </nav>
+</body>
+</html>

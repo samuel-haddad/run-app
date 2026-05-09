@@ -1,0 +1,81 @@
+.chartContainer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.chartSvg {
+  transform: rotate(-90deg);
+  width: 160px;
+  height: 160px;
+}
+
+.chartBg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 8;
+}
+
+.chartProgress {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 440;
+  stroke-dashoffset: 440;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chartInfo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  margin-top: -6px;
+}
+
+.chartPercent {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  font-weight: 700;
+  display: block;
+  line-height: 1;
+}
+
+.chartSub {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.pendingItem {
+  background: var(--surface);
+  border-left: 3px solid var(--border);
+  border-radius: 4px var(--radius-md) var(--radius-md) 4px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.pendingItem:hover {
+  border-color: var(--accent);
+  background: var(--accent-muted);
+}
+
+.pendingTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}

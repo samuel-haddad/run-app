@@ -3,6 +3,7 @@ import 'package:run_app/core/theme.dart';
 import 'package:run_app/models/models.dart';
 import 'package:run_app/services/supabase_service.dart';
 import 'package:run_app/screens/workout_detail_screen.dart';
+import 'package:run_app/screens/main_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -409,7 +410,12 @@ class _PlanningScreenState extends State<PlanningScreen> {
           if (_isEditMode) {
             _toggleSelection(treino.id);
           } else {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => WorkoutDetailScreen(treino: treino)));
+            final mainState = context.findAncestorStateOfType<MainScreenState>();
+            if (mainState != null) {
+              mainState.setActiveWorkout(treino);
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => WorkoutDetailScreen(treino: treino)));
+            }
           }
         },
         child: Row(

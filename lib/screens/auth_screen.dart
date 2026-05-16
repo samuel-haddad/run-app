@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:run_app/core/theme.dart';
 import 'package:run_app/services/supabase_service.dart';
 import 'package:run_app/screens/main_screen.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -74,27 +74,23 @@ class _AuthScreenState extends State<AuthScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header: Logo + Nome
+                   // Header: Logo + Nome
                   Row(
                     children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.accent.withOpacity(0.3)),
-                        ),
-                        child: const Icon(LucideIcons.activity, color: AppColors.accent, size: 24),
+                      SvgPicture.asset(
+                        'assets/runtrack_thumb.svg',
+                        width: 32,
+                        height: 32,
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
                       const Text(
-                        'Run App',
+                        'RunTrack',
                         style: TextStyle(
+                          fontFamily: 'Inter',
                           fontSize: 22,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: Colors.white,
-                          letterSpacing: 0.5,
+                          letterSpacing: -0.66,
                         ),
                       ),
                     ],

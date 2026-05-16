@@ -12,10 +12,10 @@ class PlanningScreen extends StatefulWidget {
   const PlanningScreen({super.key});
 
   @override
-  State<PlanningScreen> createState() => _PlanningScreenState();
+  State<PlanningScreen> createState() => PlanningScreenState();
 }
 
-class _PlanningScreenState extends State<PlanningScreen> {
+class PlanningScreenState extends State<PlanningScreen> {
   List<Treino> _treinos = [];
   Set<String> _concluidosIds = {};
   Map<String, String> _cicloNames = {};
@@ -28,10 +28,10 @@ class _PlanningScreenState extends State<PlanningScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    fetchData();
   }
 
-  Future<void> _fetchData() async {
+  Future<void> fetchData() async {
     try {
       final userId = SupabaseService.client.auth.currentUser!.id;
 
@@ -208,7 +208,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
       body: Stack(
         children: [
           RefreshIndicator(
-            onRefresh: _fetchData,
+            onRefresh: fetchData,
             color: AppColors.accent,
             child: CustomScrollView(
               slivers: [
@@ -414,7 +414,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
             if (mainState != null) {
               mainState.setActiveWorkout(treino);
             } else {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => WorkoutDetailScreen(treino: treino)));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => WorkoutDetailScreen(treino: treino))).then((_) => fetchData());
             }
           }
         },

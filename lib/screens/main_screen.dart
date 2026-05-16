@@ -17,6 +17,7 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   Treino? _activeWorkout;
+  final GlobalKey<PlanningScreenState> _planningKey = GlobalKey<PlanningScreenState>();
 
   void setActiveWorkout(Treino? treino) {
     setState(() {
@@ -29,10 +30,12 @@ class MainScreenState extends State<MainScreen> {
     setState(() {
       _currentIndex = 0;
     });
+    // Forçar atualização do Planejamento
+    _planningKey.currentState?.fetchData();
   }
 
   List<Widget> get _screens => [
-    const PlanningScreen(),
+    PlanningScreen(key: _planningKey),
     WorkoutDetailScreen(
       treino: _activeWorkout,
       onBack: resetToPlanning,
@@ -56,7 +59,13 @@ class MainScreenState extends State<MainScreen> {
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
+          onTap: (index) {
+            setState(() => _currentIndex = index);
+            if (index == 0) {
+              // Se voltou para a aba de Plano, atualiza a tela
+              _planningKey.currentState?.fetchData();
+            }
+          },
           backgroundColor: Colors.transparent,
           elevation: 0,
           selectedItemColor: AppColors.accent,

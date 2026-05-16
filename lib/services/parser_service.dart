@@ -121,9 +121,9 @@ class ParserService {
       }
 
       if (guia != null && currentSecao == null) {
-        final rhythmMatch = RegExp(r'\*\*(.*)\*\*:\s*(.*)').firstMatch(line);
+        final rhythmMatch = RegExp(r'(?:\*|-)?\s*\*\*(.*?):?\*\*:?\s*(.*)').firstMatch(line);
         if (rhythmMatch != null) {
-          guia.ritmos.add(Ritmo(nome: rhythmMatch.group(1)!, valor: rhythmMatch.group(2)!));
+          guia.ritmos.add(Ritmo(nome: rhythmMatch.group(1)!.trim(), valor: rhythmMatch.group(2)!.trim()));
           continue;
         }
         if (line.startsWith('>')) {

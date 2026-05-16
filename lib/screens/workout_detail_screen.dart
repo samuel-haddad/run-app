@@ -249,18 +249,38 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
     );
   }
 
+  String? _getTargetLetter() {
+    final p2 = _activeTreino?.prioridade2;
+    if (p2 == null) return null;
+    final match = RegExp(r'Treino\s+([A-Z])', caseSensitive: false).firstMatch(p2);
+    return match?.group(1)?.toUpperCase();
+  }
+
   Widget _buildRhythmCard(GuiaRitmos guia) {
     String paceLabel = 'Pace E / L';
     String paceValue = '5:49 - 6:35';
     String effortValue = 'Leve';
+    String? rhythmDesc;
 
-    if (guia.ritmos.isNotEmpty) {
-      final first = guia.ritmos.first;
-      paceLabel = first.nome;
-      paceValue = first.valor;
+    for (var r in guia.ritmos) {
+      final name = r.nome.toLowerCase();
+      if (name.contains('ritmo') || name.contains('pace')) {
+        paceLabel = r.nome;
+        paceValue = r.valor;
+      } else if (name.contains('esforço') || name.contains('esforco')) {
+        final val = r.valor;
+        final dotIndex = val.indexOf('.');
+        if (dotIndex != -1) {
+          effortValue = val.substring(0, dotIndex).trim();
+          rhythmDesc = val.substring(dotIndex + 1).trim();
+        } else {
+          effortValue = val;
+        }
+      }
     }
-    if (guia.ritmos.length > 1) {
-      effortValue = guia.ritmos[1].valor;
+
+    if (rhythmDesc == null && guia.descricao != null) {
+      rhythmDesc = guia.descricao;
     }
 
     return Container(
@@ -347,12 +367,12 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
                     ),
                   ],
                 ),
-                if (guia.descricao != null) ...[
+                if (rhythmDesc != null && rhythmDesc.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   const Divider(color: AppColors.border, height: 1),
                   const SizedBox(height: 12),
                   Text(
-                    guia.descricao!,
+                    rhythmDesc,
                     style: const TextStyle(
                       fontSize: 11,
                       color: AppColors.muted,
@@ -369,7 +389,10 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
   }
 
   Widget _buildSeriesSection() {
-    if (_detalhamento == null || _detalhamento!.secoes.isEmpty) {
+    final targetLetter = _getTargetLetter();
+    final secao = _detalhamento?.secoes.where((s) => s.letra == targetLetter).firstOrNull;
+
+    if (secao == null) {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -385,115 +408,110 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    _activeTreino?.prioridade2 ?? 'Principal',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    _activeTreino?.prioridade2 ?? 'Fortalecimento',
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(color: AppColors.accentMuted, borderRadius: BorderRadius.circular(4)),
-                  child: const Text('AERÓBIO', style: TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.w700)),
+                  child: const Text('COMPLEMENTO', style: TextStyle(color: AppColors.accent, fontSize: 10, fontWeight: FontWeight.w700)),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
-              _activeTreino?.prioridade1 ?? 'Corrida livre',
-              style: const TextStyle(fontSize: 14, color: Colors.white, height: 1.4),
+              _activeTreino?.prioridade2 ?? 'Nenhuma série de fortalecimento hoje.',
+              style: const TextStyle(fontSize: 13, color: AppColors.muted, height: 1.4),
             ),
           ],
         ),
       );
     }
 
-    return Column(
-      children: _detalhamento!.secoes.map((secao) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      secao.titulo,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.accentMuted,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      secao.letra == 'A'
-                          ? 'AQUECIMENTO'
-                          : (secao.letra == 'T' || secao.letra == 'B' ? 'AERÓBIO T' : 'CORE'),
-                      style: const TextStyle(
-                        color: AppColors.accent,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (secao.subtitulo != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  secao.subtitulo!,
+              Expanded(
+                child: Text(
+                  secao.titulo,
                   style: const TextStyle(
-                    color: AppColors.muted,
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.2,
                   ),
                 ),
-              ],
-              const SizedBox(height: 16),
-              Column(
-                children: secao.exercicios.map((ex) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          margin: const EdgeInsets.only(top: 8, right: 12),
-                          decoration: const BoxDecoration(
-                            color: AppColors.accent,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildRichText(ex),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.accentMuted,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  secao.letra == 'A'
+                      ? 'CORE & SUPERIOR'
+                      : (secao.letra == 'B' ? 'BASE DE FORÇA' : 'CORE & POTÊNCIA'),
+                  style: const TextStyle(
+                    color: AppColors.accent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
-        );
-      }).toList(),
+          if (secao.subtitulo != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              secao.subtitulo!,
+              style: const TextStyle(
+                color: AppColors.muted,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Column(
+            children: secao.exercicios.map((ex) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      margin: const EdgeInsets.only(top: 8, right: 12),
+                      decoration: const BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildRichText(ex),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -642,7 +660,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 56, 16, 120),
+        padding: EdgeInsets.fromLTRB(16, MediaQuery.of(context).padding.top + 8, 16, 120),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

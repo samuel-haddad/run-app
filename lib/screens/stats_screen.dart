@@ -129,7 +129,7 @@ class _StatsScreenState extends State<StatsScreen> {
                 ),
                 
                 const SizedBox(height: 32),
-                const Text('CONQUISTAS', style: AppTheme.monoStyle),
+                Text('CONQUISTAS', style: AppTheme.monoStyle),
                 const SizedBox(height: 12),
                 _buildAchievementItem(LucideIcons.flame, 'Primeiro Ciclo', 'Você iniciou sua jornada!', true),
                 _buildAchievementItem(LucideIcons.target, 'Meta Batida', 'Concluiu 5 treinos seguidos', _concluidos >= 5),

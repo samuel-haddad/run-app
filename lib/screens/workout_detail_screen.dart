@@ -115,20 +115,20 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
 
             // Guia de Ritmos
             if (_detalhamento?.guiaRitmos != null) ...[
-              const Text('GUIA DE RITMOS', style: AppTheme.monoStyle),
+              Text('GUIA DE RITMOS', style: AppTheme.monoStyle),
               const SizedBox(height: 12),
               _buildRhythmCard(_detalhamento!.guiaRitmos!),
               const SizedBox(height: 32),
             ],
 
             // Série Principal
-            const Text('SÉRIE DO DIA', style: AppTheme.monoStyle),
+            Text('SÉRIE DO DIA', style: AppTheme.monoStyle),
             const SizedBox(height: 12),
             _buildSeriesCard(),
             const SizedBox(height: 32),
 
             // Registro
-            const Text('REGISTRO', style: AppTheme.monoStyle),
+            Text('REGISTRO', style: AppTheme.monoStyle),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(20),

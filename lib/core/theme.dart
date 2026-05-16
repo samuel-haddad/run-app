@@ -41,7 +41,7 @@ class AppTheme {
         bodyMedium: TextStyle(fontSize: 13, color: AppColors.muted),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -81,7 +81,7 @@ class AppTheme {
     ),
   );
 
-  static TextStyle monoStyle = GoogleFonts.jetbrainsMono(
+  static TextStyle monoStyle = GoogleFonts.jetBrainsMono(
     fontSize: 11,
     fontWeight: FontWeight.w600,
     letterSpacing: 1.0,

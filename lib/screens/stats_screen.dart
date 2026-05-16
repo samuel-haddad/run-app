@@ -7,13 +7,14 @@ import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class StatsScreen extends StatefulWidget {
-  const StatsScreen({super.key});
+  final Function(Treino)? onWorkoutSelected;
+  const StatsScreen({super.key, this.onWorkoutSelected});
 
   @override
-  State<StatsScreen> createState() => _StatsScreenState();
+  State<StatsScreen> createState() => StatsScreenState();
 }
 
-class _StatsScreenState extends State<StatsScreen> {
+class StatsScreenState extends State<StatsScreen> {
   int _total = 0;
   int _concluidos = 0;
   double _percentual = 0.0;
@@ -23,10 +24,10 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchStats();
+    fetchStats();
   }
 
-  Future<void> _fetchStats() async {
+  Future<void> fetchStats() async {
     try {
       final userId = SupabaseService.client.auth.currentUser!.id;
 
@@ -69,7 +70,7 @@ class _StatsScreenState extends State<StatsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppColors.accent))
           : RefreshIndicator(
-              onRefresh: _fetchStats,
+              onRefresh: fetchStats,
               color: AppColors.accent,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -237,68 +238,75 @@ class _StatsScreenState extends State<StatsScreen> {
                           final bool isNext = index == 0;
                           final String statusLabel = isNext ? 'PRÓXIMO' : 'PENDENTE';
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(4),
-                                bottomLeft: Radius.circular(4),
-                                topRight: Radius.circular(12),
-                                bottomRight: Radius.circular(12),
-                              ),
-                              border: const Border(
-                                left: BorderSide(color: AppColors.border, width: 3),
-                                top: BorderSide(color: AppColors.border, width: 1),
-                                right: BorderSide(color: AppColors.border, width: 1),
-                                bottom: BorderSide(color: AppColors.border, width: 1),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        t.prioridade1 ?? 'Corrida livre',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        dateText,
-                                        style: AppTheme.monoStyle.copyWith(
-                                          fontSize: 11,
-                                          color: AppColors.muted,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                           return GestureDetector(
+                            onTap: () {
+                              if (widget.onWorkoutSelected != null) {
+                                widget.onWorkoutSelected!(t);
+                              }
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(4),
+                                  bottomLeft: Radius.circular(4),
+                                  topRight: Radius.circular(12),
+                                  bottomRight: Radius.circular(12),
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    statusLabel,
-                                    style: const TextStyle(
-                                      color: AppColors.muted,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.5,
+                                border: const Border(
+                                  left: BorderSide(color: AppColors.border, width: 3),
+                                  top: BorderSide(color: AppColors.border, width: 1),
+                                  right: BorderSide(color: AppColors.border, width: 1),
+                                  bottom: BorderSide(color: AppColors.border, width: 1),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          t.prioridade1 ?? 'Corrida livre',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          dateText,
+                                          style: AppTheme.monoStyle.copyWith(
+                                            fontSize: 11,
+                                            color: AppColors.muted,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.05),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      statusLabel,
+                                      style: const TextStyle(
+                                        color: AppColors.muted,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           );
                         }).toList(),

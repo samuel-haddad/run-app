@@ -19,6 +19,7 @@ class MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   Treino? _activeWorkout;
   final GlobalKey<PlanningScreenState> _planningKey = GlobalKey<PlanningScreenState>();
+  final GlobalKey<StatsScreenState> _statsKey = GlobalKey<StatsScreenState>();
 
   void setActiveWorkout(Treino? treino) {
     setState(() {
@@ -41,7 +42,7 @@ class MainScreenState extends State<MainScreen> {
       treino: _activeWorkout,
       onBack: resetToPlanning,
     ),
-    const StatsScreen(),
+    StatsScreen(key: _statsKey, onWorkoutSelected: setActiveWorkout),
     const ImportScreen(),
     const ProfileScreen(),
   ];
@@ -66,6 +67,9 @@ class MainScreenState extends State<MainScreen> {
             if (index == 0) {
               // Se voltou para a aba de Plano, atualiza a tela
               _planningKey.currentState?.fetchData();
+            } else if (index == 2) {
+              // Se foi para a aba de Stats, atualiza as estatísticas
+              _statsKey.currentState?.fetchStats();
             }
           },
           backgroundColor: Colors.transparent,

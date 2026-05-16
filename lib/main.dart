@@ -10,6 +10,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Inicializa o gerenciador de variáveis de ambiente (.env)
   await dotenv.load(fileName: ".env");
   await initializeDateFormatting('pt_BR', null);
   await SupabaseService.initialize();

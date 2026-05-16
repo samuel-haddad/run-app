@@ -133,18 +133,31 @@ class ParserService {
       }
 
       // Detectar Seções de Treino (A, B, C)
-      final secaoMatch = RegExp(r'^#{3,4}\s+\*{0,2}(Treino\s+([A-Z])[\s:][^*]*)\*{0,2}').firstMatch(line);
+      final secaoMatch = RegExp(r'^#+\s*\*?\*?\s*Treino\s+([A-Z])\b', caseSensitive: false).firstMatch(line);
       if (secaoMatch != null) {
-        currentSecao = SecaoTreino(titulo: secaoMatch.group(1)!, letra: secaoMatch.group(2)!, exercicios: []);
+        final cleanTitle = line
+            .replaceAll(RegExp(r'^#+\s*'), '')
+            .replaceAll('**', '')
+            .replaceAll(r'\-', '-')
+            .trim();
+        currentSecao = SecaoTreino(titulo: cleanTitle, letra: secaoMatch.group(1)!.toUpperCase(), exercicios: []);
         secoes.add(currentSecao);
         continue;
       }
 
       if (currentSecao != null) {
-        if (line.startsWith('*') || line.startsWith('-')) {
-          currentSecao.exercicios.add(line.substring(1).trim());
-        } else if (line.contains(':')) {
-          currentSecao.subtitulo = line;
+        final isNumbered = RegExp(r'^\d+\.\s+(.*)').firstMatch(line);
+        final isBullet = RegExp(r'^[\*\-]\s+(.*)').firstMatch(line);
+
+        if (isNumbered != null) {
+          currentSecao.exercicios.add(line.replaceFirst(RegExp(r'^\d+\.\s+'), '').trim());
+        } else if (isBullet != null) {
+          currentSecao.exercicios.add(isBullet.group(1)!.trim());
+        } else {
+          final cleanSupport = line.replaceAll('*', '').replaceAll('_', '').trim();
+          if (cleanSupport.isNotEmpty) {
+            currentSecao.subtitulo = cleanSupport;
+          }
         }
       }
     }

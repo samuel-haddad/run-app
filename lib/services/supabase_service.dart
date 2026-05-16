@@ -1,13 +1,18 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SupabaseService {
-  static const String url = String.fromEnvironment('SUPABASE_URL');
-  static const String anonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  static String get url => dotenv.get('SUPABASE_URL');
+  static String get anonKey => dotenv.get('SUPABASE_ANON_KEY');
 
   static Future<void> initialize() async {
-    if (url.isEmpty || anonKey.isEmpty) {
-      throw Exception('SUPABASE_URL e SUPABASE_ANON_KEY devem ser configuradas via --dart-define');
+    final url = dotenv.maybeGet('SUPABASE_URL');
+    final anonKey = dotenv.maybeGet('SUPABASE_ANON_KEY');
+
+    if (url == null || anonKey == null) {
+      throw Exception('SUPABASE_URL e SUPABASE_ANON_KEY devem estar no arquivo .env');
     }
+
     await Supabase.initialize(
       url: url,
       anonKey: anonKey,

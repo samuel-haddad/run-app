@@ -20,6 +20,8 @@ dependencies:
   fl_chart: ^0.69.0
   lucide_icons: ^0.257.0
   shared_preferences: ^2.3.2
+  flutter_dotenv: ^6.0.1
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -29,5 +31,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # assets:
-  #   - assets/images/
+  assets:
+    - .env
+    - assets/runtrack_thumb.svg
+    - assets/runtrack_logo.svg

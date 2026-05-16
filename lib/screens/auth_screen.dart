@@ -57,75 +57,105 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: const Alignment(-0.8, -0.5),
-            radius: 1.2,
-            colors: [AppColors.accent.withOpacity(0.05), AppColors.bg],
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
+      backgroundColor: AppColors.bg,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.border, width: 1.5),
+              ),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.accentMuted,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.accent.withOpacity(0.3)),
-                    ),
-                    child: const Icon(LucideIcons.activity, color: AppColors.accent),
+                  // Header: Logo + Nome
+                  Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.accent.withOpacity(0.3)),
+                        ),
+                        child: const Icon(LucideIcons.activity, color: AppColors.accent, size: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      const Text(
+                        'Run App',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 40),
+                  
                   Text(
-                    _isLogin ? 'Boas-vindas de volta' : 'Criar conta',
+                    _isLogin ? 'Boas-vindas de volta' : 'Criar sua conta',
                     style: Theme.of(context).textTheme.headlineLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _isLogin ? 'Entre para ver seus treinos' : 'Comece a registrar seus treinos',
+                    _isLogin ? 'Entre para ver seus treinos' : 'Comece sua jornada hoje',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 32),
-                  // Form
+
+                  // E-mail
+                  const Text('E-mail', style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'E-mail', hintText: 'seu@email.com'),
-                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(hintText: 'seu@email.com'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
+
+                  // Senha
+                  const Text('Senha', style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(labelText: 'Senha', hintText: '••••••••'),
                     obscureText: true,
+                    decoration: const InputDecoration(hintText: '••••••••'),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
+
+                  // Botão
                   ElevatedButton(
                     onPressed: _isLoading ? null : _handleSubmit,
                     child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.bg),
-                          )
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
                         : Text(_isLogin ? 'ENTRAR' : 'CRIAR CONTA'),
                   ),
+
                   const SizedBox(height: 24),
+
+                  // Footer
                   Center(
-                    child: TextButton(
-                      onPressed: () => setState(() => _isLogin = !_isLogin),
-                      child: Text(
-                        _isLogin ? 'Não tem conta? Criar agora' : 'Já tem conta? Fazer login',
-                        style: const TextStyle(color: AppColors.accent),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _isLogin = !_isLogin),
+                      child: RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: AppColors.muted, fontSize: 14),
+                          children: [
+                            TextSpan(text: _isLogin ? 'Não tem conta? ' : 'Já tem conta? '),
+                            TextSpan(
+                              text: _isLogin ? 'Criar conta' : 'Fazer login',
+                              style: const TextStyle(color: AppColors.accent, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

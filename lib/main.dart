@@ -5,9 +5,12 @@ import 'package:run_app/services/supabase_service.dart';
 import 'package:run_app/screens/auth_screen.dart';
 import 'package:run_app/screens/main_screen.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  await dotenv.load(fileName: ".env");
   await initializeDateFormatting('pt_BR', null);
   await SupabaseService.initialize();
 

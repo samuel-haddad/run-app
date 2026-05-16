@@ -182,7 +182,7 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(r.nome, style: AppTheme.monoStyle.copyWith(color: AppColors.muted, fontSize: 10)),
-                Text(r.valor, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.accent)),
+                Text(r.valor, style: AppTheme.monoStyle.copyWith(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.accent)),
               ],
             )).toList(),
           ),
@@ -209,7 +209,13 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(_secaoPrincipal?.titulo ?? widget.treino.prioridade2 ?? 'Principal', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Expanded(
+                child: Text(
+                  _secaoPrincipal?.titulo ?? widget.treino.prioridade2 ?? 'Principal',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 12),
               const Badge(label: Text('CORRIDA'), backgroundColor: AppColors.accentMuted),
             ],
           ),

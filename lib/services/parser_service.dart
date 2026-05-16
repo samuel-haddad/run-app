@@ -120,7 +120,7 @@ class ParserService {
         continue;
       }
 
-      if (guia != null && currentSecao == null) {
+      if (guia != null && currentSecao == null && !line.startsWith('#')) {
         final rhythmMatch = RegExp(r'(?:\*|-)?\s*\*\*(.*?):?\*\*:?\s*(.*)').firstMatch(line);
         if (rhythmMatch != null) {
           guia.ritmos.add(Ritmo(nome: rhythmMatch.group(1)!.trim(), valor: rhythmMatch.group(2)!.trim()));

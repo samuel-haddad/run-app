@@ -3,6 +3,7 @@ import 'package:run_app/core/theme.dart';
 import 'package:run_app/screens/planning_screen.dart';
 import 'package:run_app/screens/stats_screen.dart';
 import 'package:run_app/screens/import_screen.dart';
+import 'package:run_app/screens/profile_screen.dart';
 import 'package:run_app/screens/workout_detail_screen.dart';
 import 'package:run_app/models/models.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -42,6 +43,7 @@ class MainScreenState extends State<MainScreen> {
     ),
     const StatsScreen(),
     const ImportScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -78,6 +80,7 @@ class MainScreenState extends State<MainScreen> {
             BottomNavigationBarItem(icon: Icon(LucideIcons.activity), label: 'Treino'),
             BottomNavigationBarItem(icon: Icon(LucideIcons.barChart2), label: 'Stats'),
             BottomNavigationBarItem(icon: Icon(LucideIcons.uploadCloud), label: 'Upload'),
+            BottomNavigationBarItem(icon: Icon(LucideIcons.user), label: 'Perfil'),
           ],
         ),
       ),

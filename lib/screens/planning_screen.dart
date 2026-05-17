@@ -46,7 +46,7 @@ class PlanningScreenState extends State<PlanningScreen> {
           .from('treinos')
           .select('*, ciclos(nome)')
           .eq('user_id', userId)
-          .order('data_treino');
+          .order('data_treino', ascending: true);
 
       final registrosData = await SupabaseService.client
           .from('registros')
@@ -61,6 +61,7 @@ class PlanningScreenState extends State<PlanningScreen> {
           }
           return t;
         }).toList();
+        _treinos.sort((a, b) => a.dataTreino.compareTo(b.dataTreino));
         _concluidosIds = (registrosData as List).map((json) => json['treino_id'].toString()).toSet();
         _isLoading = false;
       });

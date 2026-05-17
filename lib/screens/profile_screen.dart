@@ -338,7 +338,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'ATLETA NÍVEL 4',
+                          'RUNNER',
                           style: AppTheme.monoStyle.copyWith(
                             color: AppColors.accent,
                             fontSize: 12,

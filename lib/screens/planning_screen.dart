@@ -20,10 +20,17 @@ class PlanningScreenState extends State<PlanningScreen> {
   Set<String> _concluidosIds = {};
   Map<String, String> _cicloNames = {};
   bool _isLoading = true;
+  bool _showAll = false;
 
   // Modo de edição
   bool _isEditMode = false;
   Set<String> _selectedIds = {};
+
+  List<Treino> get _displayedTreinos {
+    return _showAll
+        ? _treinos
+        : _treinos.where((t) => !_concluidosIds.contains(t.id)).toList();
+  }
 
   @override
   void initState() {
@@ -164,11 +171,12 @@ class PlanningScreenState extends State<PlanningScreen> {
   }
 
   void _selectAll() {
+    final displayed = _displayedTreinos;
     setState(() {
-      if (_selectedIds.length == _treinos.length) {
+      if (_selectedIds.length == displayed.length) {
         _selectedIds.clear();
       } else {
-        _selectedIds = _treinos.map((t) => t.id).toSet();
+        _selectedIds = displayed.map((t) => t.id).toSet();
       }
     });
   }
@@ -216,62 +224,69 @@ class PlanningScreenState extends State<PlanningScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 56, 16, 24),
                   sliver: SliverToBoxAdapter(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            // Logo
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SvgPicture.asset(
-                                  'assets/runtrack_thumb.svg',
-                                  width: 28,
-                                  height: 28,
+                                // Logo
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/runtrack_thumb.svg',
+                                      width: 28,
+                                      height: 28,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'RunTrack',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                        letterSpacing: -0.66,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'RunTrack',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                    letterSpacing: -0.66,
+                                const SizedBox(height: 20),
+                                Text(
+                                  DateFormat('EEEE, dd \'de\' MMMM', 'pt_BR').format(DateTime.now()).toUpperCase(),
+                                  style: AppTheme.monoStyle.copyWith(color: AppColors.accent, fontSize: 11),
+                                ),
+                                const SizedBox(height: 4),
+                                Text('Planejamento', style: Theme.of(context).textTheme.headlineLarge),
+                              ],
+                            ),
+                            // Botão "Tudo" + "Editar/Cancelar"
+                            Row(
+                              children: [
+                                if (_isEditMode) ...[
+                                  _buildHeaderButton(
+                                    label: 'Tudo',
+                                    onTap: _selectAll,
+                                    isOutline: true,
                                   ),
+                                  const SizedBox(width: 8),
+                                ],
+                                _buildHeaderButton(
+                                  label: _isEditMode ? 'Cancelar' : 'Editar',
+                                  onTap: _toggleEditMode,
+                                  isActive: _isEditMode,
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 20),
-                            Text(
-                              DateFormat('EEEE, dd \'de\' MMMM', 'pt_BR').format(DateTime.now()).toUpperCase(),
-                              style: AppTheme.monoStyle.copyWith(color: AppColors.accent, fontSize: 11),
-                            ),
-                            const SizedBox(height: 4),
-                            Text('Planejamento', style: Theme.of(context).textTheme.headlineLarge),
                           ],
                         ),
-                        // Botão "Tudo" + "Editar/Cancelar"
-                        Row(
-                          children: [
-                            if (_isEditMode) ...[
-                              _buildHeaderButton(
-                                label: 'Tudo',
-                                onTap: _selectAll,
-                                isOutline: true,
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            _buildHeaderButton(
-                              label: _isEditMode ? 'Cancelar' : 'Editar',
-                              onTap: _toggleEditMode,
-                              isActive: _isEditMode,
-                            ),
-                          ],
-                        ),
+                        const SizedBox(height: 16),
+                        _buildShowAllSwitch(),
                       ],
                     ),
                   ),
@@ -282,7 +297,7 @@ class PlanningScreenState extends State<PlanningScreen> {
                   const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator(color: AppColors.accent)),
                   )
-                else if (_treinos.isEmpty)
+                else if (_displayedTreinos.isEmpty)
                   SliverFillRemaining(
                     child: Center(
                       child: Column(
@@ -290,8 +305,18 @@ class PlanningScreenState extends State<PlanningScreen> {
                         children: [
                           Icon(LucideIcons.calendar, size: 48, color: AppColors.muted.withOpacity(0.4)),
                           const SizedBox(height: 16),
-                          const Text('Nenhum treino importado', style: TextStyle(fontWeight: FontWeight.bold)),
-                          const Text('Vá em Upload para começar'),
+                          Text(
+                            _treinos.isEmpty
+                                ? 'Nenhum treino importado'
+                                : 'Todos os treinos concluídos!',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _treinos.isEmpty
+                                ? 'Vá em Upload para começar'
+                                : 'Ative "Mostrar todos os treinos" para ver o histórico',
+                          ),
                         ],
                       ),
                     ),
@@ -301,8 +326,8 @@ class PlanningScreenState extends State<PlanningScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
-                        (context, index) => _buildWorkoutCard(_treinos[index]),
-                        childCount: _treinos.length,
+                        (context, index) => _buildWorkoutCard(_displayedTreinos[index]),
+                        childCount: _displayedTreinos.length,
                       ),
                     ),
                   ),
@@ -621,6 +646,52 @@ class PlanningScreenState extends State<PlanningScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildShowAllSwitch() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface2,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(
+                _showAll ? LucideIcons.eye : LucideIcons.eyeOff,
+                size: 18,
+                color: _showAll ? AppColors.accent : AppColors.muted,
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'Mostrar todos os treinos',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          Switch.adaptive(
+            value: _showAll,
+            onChanged: (value) {
+              setState(() {
+                _showAll = value;
+              });
+            },
+            activeThumbColor: AppColors.accent,
+            activeTrackColor: AppColors.accent.withOpacity(0.3),
+            inactiveThumbColor: AppColors.muted,
+            inactiveTrackColor: AppColors.border,
+          ),
+        ],
       ),
     );
   }

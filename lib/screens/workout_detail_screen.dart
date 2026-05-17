@@ -56,15 +56,14 @@ class _WorkoutDetailScreenState extends State<WorkoutDetailScreen> {
       if (targetTreino == null) {
         // Buscar treino do dia atual
         final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
-        final treinosData = await SupabaseService.client
+        final List<dynamic> treinosData = await SupabaseService.client
             .from('treinos')
             .select()
             .eq('user_id', userId)
-            .eq('data_treino', todayStr)
-            .maybeSingle();
+            .eq('data_treino', todayStr);
 
-        if (treinosData != null) {
-          targetTreino = Treino.fromJson(treinosData);
+        if (treinosData.isNotEmpty) {
+          targetTreino = Treino.fromJson(treinosData.first);
         } else {
           setState(() {
             _noWorkoutToday = true;

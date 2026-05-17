@@ -50,11 +50,21 @@ class ParserService {
 
     List<TreinoRow> result = [];
 
-    // Mapeamento de colunas
+    // Mapeamento de colunas com heurísticas robustas
     int colDia = header.indexWhere((c) => c.contains('dia'));
     int colData = header.indexWhere((c) => c.contains('data'));
-    int colP1 = header.indexWhere((c) => c.contains('prioridade 1') || c.contains('prio 1'));
-    int colP2 = header.indexWhere((c) => c.contains('prioridade 2') || c.contains('prio 2'));
+    int colP1 = header.indexWhere((c) => 
+        c.contains('prioridade 1') || 
+        c.contains('prio 1') || 
+        c.contains('1º') || 
+        c.contains('1o') ||
+        (c.contains('prioridade') && !c.contains('2')));
+    int colP2 = header.indexWhere((c) => 
+        c.contains('prioridade 2') || 
+        c.contains('prio 2') || 
+        c.contains('2º') || 
+        c.contains('2o') || 
+        c.contains('complemento'));
     int colTerreno = header.indexWhere((c) => c.contains('terreno'));
     int colDuracao = header.indexWhere((c) => c.contains('dura'));
 
@@ -66,10 +76,11 @@ class ParserService {
 
       // Inferência de data (DD/MM ou DD/MM/YYYY)
       String isoDate = _parseDate(dateStr);
+      String diaVal = colDia != -1 ? row[colDia].toString() : '';
 
       result.add(TreinoRow(
-        diaNumero: colDia != -1 ? int.tryParse(row[colDia].toString()) : null,
-        diaSemana: _getWeekday(isoDate),
+        diaNumero: colDia != -1 ? _parseDiaNumero(diaVal) : null,
+        diaSemana: _parseDiaSemana(diaVal, isoDate),
         dataTreino: isoDate,
         prioridade1: colP1 != -1 ? row[colP1].toString() : null,
         prioridade2: colP2 != -1 ? row[colP2].toString() : null,
@@ -79,6 +90,45 @@ class ParserService {
     }
 
     return result;
+  }
+
+  static int? _parseDiaNumero(String val) {
+    final cleanVal = val.trim();
+    final match = RegExp(r'^\d+').firstMatch(cleanVal);
+    if (match != null) {
+      return int.tryParse(match.group(0)!);
+    }
+    final anyMatch = RegExp(r'\d+').firstMatch(cleanVal);
+    if (anyMatch != null) {
+      return int.tryParse(anyMatch.group(0)!);
+    }
+    return null;
+  }
+
+  static String _parseDiaSemana(String diaVal, String isoDate) {
+    final cleanDia = diaVal.trim();
+    final match = RegExp(r'\((.*?)\)').firstMatch(cleanDia);
+    if (match != null) {
+      final extracted = match.group(1)!.trim();
+      if (extracted.isNotEmpty) {
+        return extracted[0].toUpperCase() + extracted.substring(1).toLowerCase();
+      }
+    }
+    
+    try {
+      final date = DateTime.parse(isoDate);
+      final fullDay = DateFormat('EEEE', 'pt_BR').format(date).toLowerCase();
+      if (fullDay.contains('segunda')) return 'Seg';
+      if (fullDay.contains('terça') || fullDay.contains('terca')) return 'Ter';
+      if (fullDay.contains('quarta')) return 'Qua';
+      if (fullDay.contains('quinta')) return 'Qui';
+      if (fullDay.contains('sexta')) return 'Sex';
+      if (fullDay.contains('sábado') || fullDay.contains('sabado')) return 'Sáb';
+      if (fullDay.contains('domingo')) return 'Dom';
+      return DateFormat('E', 'pt_BR').format(date);
+    } catch (_) {
+      return '';
+    }
   }
 
   static String _parseDate(String input) {
@@ -95,11 +145,6 @@ class ParserService {
     } catch (_) {
       return DateFormat('yyyy-MM-dd').format(DateTime.now());
     }
-  }
-
-  static String _getWeekday(String isoDate) {
-    final date = DateTime.parse(isoDate);
-    return DateFormat('EEEE', 'pt_BR').format(date);
   }
 
   static Detalhamento parseMarkdown(String content) {

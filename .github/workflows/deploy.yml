@@ -32,6 +32,9 @@ jobs:
         run: |
           flutter build web --release --base-href "/run-app/"
 
+      - name: Create .nojekyll
+        run: touch build/web/.nojekyll
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
